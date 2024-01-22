@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken')
 //REGISTER
 router.post("/register", async (req,res) => {
     const newUser = new User({
+        firstname : req.body.firstname,
+        familyname : req.body.familyname,
         username: req.body.username,
         email: req.body.email,
         password: CryptoJS.AES.encrypt(req.body.password, process.env.ENCRYPT_KEY).toString(),
@@ -13,7 +15,8 @@ router.post("/register", async (req,res) => {
 
     try{
         const savedUser = await newUser.save();
-        res.status(201).json(savedUser);
+        const { password, ...others } = savedUser._doc
+        res.status(201).json({...others});
     } catch (err) {
         res.status(500).json(err);
     }
@@ -25,15 +28,15 @@ router.post('/login', async (req, res) => {
     try{
         const user = await User.findOne(
             {
-                userName: req.body.user_name
+                username: req.body.username
             }
         );
-
-        !user && res.status(401).json("Wrong User Name");
+        if(!user)
+            return res.status(401).json("Wrong User Name");
 
         const hashedPassword = CryptoJS.AES.decrypt(
             user.password,
-            process.env.ENCRYPT_KEY
+            process.env.ENCRYPT_KEY,
         );
 
 
@@ -41,8 +44,8 @@ router.post('/login', async (req, res) => {
 
         const inputPassword = req.body.password;
         
-        originalPassword != inputPassword && 
-            res.status(401).json("Wrong Password");
+        if (originalPassword != inputPassword)
+            return res.status(401).json("Wrong Password");
 
         const accessToken = jwt.sign(
         {
@@ -50,12 +53,11 @@ router.post('/login', async (req, res) => {
             isAdmin: user.isAdmin,
         },
         process.env.JWT_SECRET,
-            {expiresIn:"2d"}
+            {expiresIn:"1d"}
         );
   
         const { password, ...others } = user._doc;  
         res.status(200).json({...others, accessToken});
-
     }catch(err){
         res.status(500).json(err);
     }

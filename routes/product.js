@@ -47,6 +47,7 @@ router.get("/find/:productId", async (req, res) => {
 router.get("/", async (req, res) => {
     const qNew = req.query.new;
     const qCategory = req.query.category;
+    const qBrand = req.query.brand
     try{
         let products;
         if (qNew){ 
@@ -55,7 +56,12 @@ router.get("/", async (req, res) => {
             products = await Product.find({categories:{
                 $in : [qCategory],
             }});
-        } else{
+        } else if (qBrand){
+            products = await Product.find({brand:{
+                $in : [qBrand],
+            }});
+        } 
+        else{
             products = await Product.find();
         }
         res.status(200).json(products);

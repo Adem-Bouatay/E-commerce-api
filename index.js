@@ -12,13 +12,6 @@ const stripeRoute = require('./routes/stripe');
 
 dotenv.config();
 
-const corsOptions = {
-    origin: 'https://footkits.onrender.com', // Specify your allowed origin
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // Enable credentials (cookies, authorization headers) across domains
-    optionsSuccessStatus: 204,
-  };
-
 mongoose.connect(process.env.MongoLink)
   .then(()=>{
     console.log('DB Connected Successfully!')
@@ -26,7 +19,7 @@ mongoose.connect(process.env.MongoLink)
     console.log(err)
 });
 
-app.use(cors(corsOptions))
+app.use(cors())
 app.use(express.json());
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
